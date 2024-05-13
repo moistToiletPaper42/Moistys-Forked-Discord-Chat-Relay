@@ -18,6 +18,7 @@ If you are looking to use this plugin purely to log chats, I recommend using the
 
 ## How to Install:
 
+- Install `discord_api.smx`: https://github.com/Cruze03/sourcemod-discord/tree/master
 - Clone the repository by hitting the big green download code button at the top.
 - Extract the ZIP file to your game-directory folder (Eg: csgo/) on your server.
 
