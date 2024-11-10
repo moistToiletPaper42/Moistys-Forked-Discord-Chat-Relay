@@ -27,6 +27,7 @@ public void OnPluginStart()
     g_cvChatHook = CreateConVar("infra_dcr_enable", "0", "Toggle whether the plugin is enabled. 1 = Enabled, 0 = Disabled.", _, true, 0.0, true, 1.0);
     g_cvSimpleMode = CreateConVar("infra_dcr_simple", "0", "Toggle simple chat webook mode. 1 = Simple, 0 = Modern.", _, true, 0.0, true, 1.0);
     g_cvDebug = CreateConVar("infra_dcr_debug", "0", "Toggle debug mode. 1 = Enabled, 0 = Disabled.", _, true, 0.0, true, 1.0);
+    g_cvGaggedAndTriggers = CreateConVar("infra_dcr_triggers_gagged", "0", "Toggle whether chat triggers and gagged messages are sent to Discord. 1 = Enabled, 0 = Disabled.", _, true, 0.0, true, 1.0);
     g_cvWebhook = CreateConVar("infra_dcr_webhook_url", "", "Webhook URL to relay chats to.", FCVAR_PROTECTED);
     g_cvSteamAPIKey = CreateConVar("infra_dcr_steamAPI_key", "", "Steam Web API key.", FCVAR_PROTECTED);
 
@@ -65,7 +66,9 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
             {
                 PrintToConsole(0, "[Infra-DCR] DEBUG: Client %i is gagged or used a chat trigger, aborting.", client);
             }
-            return;
+            if (!g_cvGaggedAndTriggers.BoolValue){
+                return;
+            }
         }
     }
     
