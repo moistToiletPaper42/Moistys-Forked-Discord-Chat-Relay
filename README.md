@@ -1,6 +1,6 @@
-# Infra's Simple Discord Chat Relay for SourceMod
+# Moisty's Fork of Infra's Simple Discord Chat Relay for SourceMod
 
-Simple SourceMod plugin that logs chats to Discord via webhooks. Not everything needs to be complicated! Tested on CS:GO and TF2.
+Simple SourceMod plugin that logs chats to Discord via webhooks. Not everything needs to be complicated! The original was tested in CS:GO and TF2. This fork was tested in L4D2.
 
 ## Webhook Styles:
 
@@ -18,8 +18,12 @@ If you are looking to use this plugin purely to log chats, I recommend using the
 
 ## How to Install:
 
-- Install `discord_api.smx`: https://github.com/Cruze03/sourcemod-discord/tree/master
-- Clone the repository by hitting the big green download code button at the top.
+- Install SteamWorks: https://users.alliedmods.net/~kyles/builds/SteamWorks/
+- The following mods are already included in the repository. If they don't work or need to be updated they can be found here:
+  - `plugins/discord_api.smx`: https://github.com/Cruze03/sourcemod-discord/tree/master
+  - `extensions/smjansson.ext.dll` and `extensions/smjansson.ext.so`: https://github.com/davenonymous/SMJansson/tree/master/bin
+  - `scripting/include/smjansson.inc`: https://github.com/davenonymous/SMJansson/tree/master/pawn/scripting/include
+- Clone the repository (or download it as a .zip) by hitting the big green code button at the top.
 - Extract the ZIP file to your game-directory folder (Eg: csgo/) on your server.
 
 ## How to Configure:
