@@ -86,7 +86,7 @@ public void OnClientPutInServer(int client)
         GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
 
         char message[512];
-        Format(message, sizeof(message), "**Player connected (%s) (%i/%i):** %s (%s)", ccode, g_currentPlayers, maxPlayers, name, steamId);
+        Format(message, sizeof(message), "**Player connected (`%s`) (`%i/%i`):** %s (`%s`)", ccode, g_currentPlayers, maxPlayers, name, steamId);
 
         sendSpecifiedWebhook(webhook, message);
     }
@@ -122,7 +122,7 @@ public void OnClientDisconnect(int client){
         GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
 
         char message[512];
-        Format(message, sizeof(message), "**Player disconnected (%s) (%i/%i):** %s (%s)", ccode, g_currentPlayers, maxPlayers, name, steamId);
+        Format(message, sizeof(message), "**Player disconnected (`%s`) (`%i/%i`):** %s (`%s`)", ccode, g_currentPlayers, maxPlayers, name, steamId);
 
         sendSpecifiedWebhook(webhook, message);
     }
@@ -269,10 +269,6 @@ void sendPrettyChatWebhook(int client, char[] text)
 
 void sendSpecifiedWebhook(char[] webhook, char[] text)
 {
-
-    ReplaceString(text, 32, "@", "\\@", false);
-    ReplaceString(text, 32, "\\", "\\\\", false);
-    ReplaceString(text, 32, "`", "\\`", false);
 
     DiscordWebHook hook = new DiscordWebHook(webhook);
     hook.SlackMode = true;
