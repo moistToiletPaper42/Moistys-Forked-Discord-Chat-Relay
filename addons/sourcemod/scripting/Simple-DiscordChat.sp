@@ -12,10 +12,8 @@ ConVar g_cvPrettyMode;
 ConVar g_cvSteamAPIKey;
 ConVar g_cvDebug;
 ConVar g_cvGaggedAndTriggers;
-ConVar g_cvMaxPlayers;
 HTTPClient httpClient;
 char g_szSteamAvatar[MAXPLAYERS + 1][256];
-int g_currentPlayers = 0;
 
 public Plugin myinfo = 
 {
@@ -34,8 +32,6 @@ public void OnPluginStart()
     g_cvGaggedAndTriggers = CreateConVar("dcr_triggers_gagged", "0", "Toggle whether chat triggers and gagged messages are sent to Discord. 1 = Enabled, 0 = Disabled.", _, true, 0.0, true, 1.0);
     g_cvChatWebhook = CreateConVar("dcr_webhook_url", "", "Webhook URL to relay chats to.", FCVAR_PROTECTED);
     g_cvSteamAPIKey = CreateConVar("dcr_steamAPI_key", "", "Steam Web API key.", FCVAR_PROTECTED);
-
-    g_cvMaxPlayers = FindConVar("sv_maxplayers");
 
     RegServerCmd("discord", Command_Discord, "Send a message to a Discord webhook.")
 
@@ -66,9 +62,6 @@ public void OnClientPutInServer(int client)
             return;
         }
 
-        int maxPlayers = GetConVarInt(g_cvMaxPlayers);
-        g_currentPlayers++;
-
         char name[MAX_NAME_LENGTH];
         GetClientName(client, name, sizeof(name));
 
@@ -86,7 +79,7 @@ public void OnClientPutInServer(int client)
         GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
 
         char message[512];
-        Format(message, sizeof(message), "**Player connected (`%s`) (`%i/%i`):** %s (`%s`)", ccode, g_currentPlayers, maxPlayers, name, steamId);
+        Format(message, sizeof(message), "**Player connected (`%s`):** %s (`%s`)", ccode, name, steamId);
 
         sendSpecifiedWebhook(webhook, message);
     }
@@ -101,9 +94,6 @@ public void OnClientDisconnect(int client){
         if(strncmp(steamId, "BOT", 3) == 0){
             return;
         }
-
-        int maxPlayers = GetConVarInt(g_cvMaxPlayers);
-        g_currentPlayers--;
 
         char name[MAX_NAME_LENGTH];
         GetClientName(client, name, sizeof(name));
@@ -122,7 +112,7 @@ public void OnClientDisconnect(int client){
         GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
 
         char message[512];
-        Format(message, sizeof(message), "**Player disconnected (`%s`) (`%i/%i`):** %s (`%s`)", ccode, g_currentPlayers, maxPlayers, name, steamId);
+        Format(message, sizeof(message), "**Player disconnected (`%s`):** %s (`%s`)", ccode, name, steamId);
 
         sendSpecifiedWebhook(webhook, message);
     }
