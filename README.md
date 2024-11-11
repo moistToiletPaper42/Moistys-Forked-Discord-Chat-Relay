@@ -1,6 +1,6 @@
 # Moisty's Fork of Infra's Simple Discord Chat Relay for SourceMod
 
-Simple SourceMod plugin that logs chats to Discord via webhooks. Not everything needs to be complicated! The original was tested in CS:GO and TF2. This fork was tested in L4D2.
+Simple SourceMod plugin that logs chats (as well as server connections/disconnects) to Discord via webhooks. Not everything needs to be complicated! The original was tested in CS:GO and TF2. This fork was tested in L4D2.
 
 ## Webhook Styles:
 
@@ -14,7 +14,13 @@ Simple Style (`infra_dcr_simple "1"`):
 
 ![Simple Style](https://infra.s-ul.eu/75UIvxUK)
 
-If you are looking to use this plugin purely to log chats, I recommend using the simple style. While it may not be as pretty as the other option, it makes searching SteamIDs in Discord possible. 
+If you are looking to use this plugin purely to log chats, I recommend using the simple style. While it may not be as pretty as the other option, it makes searching SteamIDs in Discord possible.
+
+## Server Commands:
+
+`discord`:
+- **Syntax:** `discord <message> [webhook*]`
+- **Description:** Sends a message to Discord using the specified webhook. If no webhook is specified, the default webhook will be used. \*`webhook` is an optional argument and should be wrapped in quotes as Source Mod parses ":" as an individual argument.
 
 ## How to Install:
 
@@ -30,7 +36,7 @@ If you are looking to use this plugin purely to log chats, I recommend using the
 
 All configuration is done in `cfg/sourcemod/Infra-DiscordChat.cfg`. 
 
-### Setting up `infra_dcr_webhook_url`:
+### Setting up `dcr_webhook_url`:
 The plugin needs a WebHook URL from Discord to be able to send chat messages to. Follow the steps below if you are unsure how this can be done:
 
 * ***Step 1:*** Edit a channel > enter the Webhooks section inside the Integrations sub-menu > Make a new webhook.
@@ -39,7 +45,17 @@ The plugin needs a WebHook URL from Discord to be able to send chat messages to.
 
 ![Webhook Setup](https://infra.s-ul.eu/PGIRZY4W)
 
-### Setting up `infra_dcr_steamAPI_key`:
+### Setting up `dcr_steamAPI_key`:
 The plugin uses a SteamAPI key to access the Steam Web API to get player's profile pictures. This is an optional ConVar, disabling it will default the plugin to the simple webhook style since it can't pull profile pictures.
 
 You can get your SteamAPI key here: https://steamcommunity.com/dev/apikey (**DO NOT SHARE THIS KEY WITH ANYONE.**)
+
+## Building
+
+How you build this is entirely up to you. However, the build script is setup to work with the gitignored `linking/` and `tools/` directories.
+
+To setup tools, get a build of SourceMod and extract it to `tools/`.
+- builds are here: https://www.sourcemod.net/downloads.php
+  - For Windows, click the latest Blue (not Pink) Windows icon, so you don't have to build SourceMod yourself.
+
+The build script will automatically copy the necessary files from the project and `tools/` to the `linking/` directory prior to compiling. The compiled .smx files will be automatically placed in the `addons/sourcemod/plugins` directory. If you feel like contributing your build, please be sure to include the compiled .smx files in `addons/sourcemod/plugins` in your pull request.
