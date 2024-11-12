@@ -14,6 +14,7 @@ ConVar g_cvDebug;
 ConVar g_cvGaggedAndTriggers;
 HTTPClient httpClient;
 char g_szSteamAvatar[MAXPLAYERS + 1][256];
+int started = 0;
 
 public Plugin myinfo = 
 {
@@ -38,12 +39,40 @@ public void OnPluginStart()
     AutoExecConfig(true, "Simple-DiscordChat");
 }
 
+bool RealPlayerExist(int iExclude = 0)
+{
+	for( int client = 1; client <= MaxClients; client++ )
+	{
+		if( client != iExclude && IsClientConnected(client) )
+		{
+			if( !IsFakeClient(client) )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 public void OnConfigsExecuted()
 {
     if (httpClient != null)
     	delete httpClient;
     
     httpClient = new HTTPClient("https://api.steampowered.com");
+
+    if (started == 0){
+        started = 1;
+
+        char message[512] = "## _Server has started!_";
+        sendDefaultWebhook(message);
+
+        char map[PLATFORM_MAX_PATH];
+        GetCurrentMap(map, sizeof(map));
+        GetMapDisplayName(map, map, sizeof(map));
+        Format(message, sizeof(message), "_**Map `%s` has loaded...**_", map);
+        sendDefaultWebhook(message);
+    }
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -62,6 +91,14 @@ public void OnClientPutInServer(int client)
             return;
         }
 
+        char webhook[1024];
+        GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));    
+        if (StrEqual(webhook, ""))
+        {
+            LogError("[Simple-DCR] WebhookURL was not configured, aborting.");
+            return;
+        }
+
         char name[MAX_NAME_LENGTH];
         GetClientName(client, name, sizeof(name));
 
@@ -75,9 +112,6 @@ public void OnClientPutInServer(int client)
             ccode = "???";
         }
 
-        char webhook[1024];
-        GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
-
         char message[512];
         Format(message, sizeof(message), "**Player connected (`%s`):** %s (`%s`)", ccode, name, steamId);
 
@@ -88,10 +122,18 @@ public void OnClientPutInServer(int client)
 public void OnClientDisconnect(int client){
     if (IsClientConnected(client))
     {
+
         char steamId[32];
         GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId), true);
 
         if(strncmp(steamId, "BOT", 3) == 0){
+            return;
+        }
+        char webhook[1024];
+        GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
+        if (StrEqual(webhook, ""))
+        {
+            LogError("[Simple-DCR] WebhookURL was not configured, aborting.");
             return;
         }
 
@@ -108,13 +150,16 @@ public void OnClientDisconnect(int client){
             ccode = "???";
         }
 
-        char webhook[1024];
-        GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
-
         char message[512];
         Format(message, sizeof(message), "**Player disconnected (`%s`):** %s (`%s`)", ccode, name, steamId);
 
         sendSpecifiedWebhook(webhook, message);
+
+        if(!RealPlayerExist( client )){
+            message = "_**Server is empty!**_";
+
+            sendDefaultWebhook(message);
+        }
     }
 }
 
@@ -168,6 +213,22 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
         sendSimpleChatWebhook(client, messageTxt);
 }
 
+public void OnMapEnd() {
+    char message[512], map[PLATFORM_MAX_PATH];
+    GetCurrentMap(map, sizeof(map));
+    GetMapDisplayName(map, map, sizeof(map));
+    Format(message, sizeof(message), "_**Map `%s` is unloading...**_", map);
+    sendDefaultWebhook(message);
+}
+
+public void OnMapStart() {
+    char message[512], map[PLATFORM_MAX_PATH]
+    GetCurrentMap(map, sizeof(map));
+    GetMapDisplayName(map, map, sizeof(map));
+    Format(message, sizeof(message), "_**Map `%s` has loaded...**_", map);
+    sendDefaultWebhook(message);
+}
+
 public Action Command_Discord(int args)
 {
     // discord command accepts 2 arguments, the webhook (optional - check for "http" prefix) and the message (can contain spaces!)
@@ -193,6 +254,11 @@ public Action Command_Discord(int args)
         strcopy(messageTxt, fullArgsLen - webhookLen - 2, fullargs) //-2 to account for quotes and space
     } else {
         GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
+        if (StrEqual(webhook, ""))
+        {
+            LogError("[Simple-DCR] WebhookURL was not configured, aborting.");
+            return Plugin_Handled;
+        }
         strcopy(messageTxt, sizeof(messageTxt), fullargs);
     }
 
@@ -257,6 +323,24 @@ void sendPrettyChatWebhook(int client, char[] text)
     delete hook;
 }
 
+void sendDefaultWebhook(char[] text)
+{
+    char webhook[1024];
+    GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
+    if (StrEqual(webhook, ""))
+    {
+        LogError("[Simple-DCR] WebhookURL was not configured. Aborting.");
+        return;
+    }
+
+    DiscordWebHook hook = new DiscordWebHook(webhook);
+    hook.SlackMode = true;
+    hook.SetContent(text);
+    hook.Send();
+
+    delete hook;
+}
+
 void sendSpecifiedWebhook(char[] webhook, char[] text)
 {
 
@@ -274,7 +358,7 @@ void sendSimpleChatWebhook(int client, char[] text)
     GetConVarString(g_cvChatWebhook, webhook, sizeof(webhook));
     if (StrEqual(webhook, ""))
 	{
-        LogError("[Infra-DCR] WebhookURL was not configured. Aborting.");
+        LogError("[Simple-DCR] WebhookURL was not configured. Aborting.");
         return;
 	}
 
@@ -294,7 +378,7 @@ void sendSimpleChatWebhook(int client, char[] text)
     ReplaceString(clientName, 32, "\\", "", false);
     ReplaceString(clientName, 32, "`", "", false);
 
-    Format(finalText, sizeof(finalText), "%s (`%s`): `%s`", clientName, steamID, text);
+    Format(finalText, sizeof(finalText), "> %s (`%s`): `%s`", clientName, steamID, text);
 
     sendSpecifiedWebhook(webhook, finalText);
 }
